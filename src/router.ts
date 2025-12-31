@@ -8,8 +8,9 @@
 import PQueue from 'p-queue';
 import type { Message, Chat } from 'whatsapp-web.js';
 import { config, log, formatBotResponse } from './config.js';
-import { getProjectPath, ensureProjectExists } from './projects.js';
+import { getProjectPath, ensureProjectExists, sanitizeProjectName } from './projects.js';
 import { handleClaudeQuery } from './claude.js';
+import { getRegisteredGroup, registerGroup } from './sessions.js';
 
 // One queue per group (groupId → queue)
 const queues: Map<string, PQueue> = new Map();
@@ -65,6 +66,24 @@ export async function routeMessage(
 
   const groupId = chat.id._serialized;
   const groupName = chat.name;
+  const projectName = sanitizeProjectName(groupName);
+
+  // Check for duplicate group name (different group claiming same project name)
+  const registeredGroupId = getRegisteredGroup(projectName);
+  if (registeredGroupId && registeredGroupId !== groupId) {
+    await sendResponse(formatBotResponse(
+      `⚠️ Another group already uses the project name "${projectName}". ` +
+      `Please use the original group or rename/delete this one.`
+    ));
+    return;
+  }
+
+  // Register this group if not already registered
+  if (!registeredGroupId) {
+    registerGroup(projectName, groupId);
+    log('info', `[${groupName}] Registered as owner of project "${projectName}"`);
+  }
+
   const queue = getQueue(groupId);
 
   // Check queue size limit

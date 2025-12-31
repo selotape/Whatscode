@@ -1,5 +1,6 @@
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
+type ClientType = pkg.Client;
 type Message = pkg.Message;
 type Chat = pkg.Chat;
 import qrcode from 'qrcode-terminal';
@@ -11,7 +12,7 @@ export interface WhatsAppHandlers {
   onMessage: (message: Message, chat: Chat) => Promise<void>;
 }
 
-export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
+export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
   console.log('Creating WhatsApp client...');
 
   // Use headless: false for debugging - set to true for production
