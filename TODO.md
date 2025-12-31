@@ -5,7 +5,7 @@ Features and improvements to add after the alpha is working.
 ## High Priority
 
 - [x] **Distinguish message sources** - Make a clear distinction between Claude responses and server messages (e.g. errors, unsupported operations)
-- [ ] **Queue acknowledgment messages** - Send "📥 Queued (position 2)..." when messages are queued
+- [x] **Queue acknowledgment messages** - Send "📥 Queued (position 2)..." when messages are queued
 - [ ] **Response chunking** - Split long responses (>3000 chars) into multiple messages
 - [ ] **"Working on it..." updates** - Send progress for long-running tasks (>30 seconds)
 - [ ] **Better error messages** - Include troubleshooting hints in error responses

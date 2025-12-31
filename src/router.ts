@@ -83,10 +83,11 @@ export async function routeMessage(
   const projectPath = getProjectPath(groupName);
   ensureProjectExists(projectPath, groupName);
 
-  // Log queue status
+  // Log queue status and notify user if queued
   const queueSize = queue.size + 1; // +1 for this message
   if (queueSize > 1) {
     log('info', `[${groupName}] Queued message (position ${queueSize})`);
+    await sendResponse(formatServerMessage(`📥 Queued (position ${queueSize}). Please wait...`));
   }
 
   // Add to queue for processing
