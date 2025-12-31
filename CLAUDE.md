@@ -128,6 +128,7 @@ The E2E harness checks for Chrome's profile lock files before starting. If anoth
 # Create worktree for feature
 git worktree add ../Whatscode-<feature> -b feature/<feature>
 cd ../Whatscode-<feature>
+npm install  # Required! Worktrees don't share node_modules
 
 # When done, merge and clean up
 cd C:/Users/Ron/work/GitHub/Whatscode
