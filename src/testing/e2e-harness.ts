@@ -151,6 +151,7 @@ export class E2EHarness {
         if (normalizedName === TEST_GROUP_NAME || normalizedName.startsWith(TEST_GROUP_NAME)) {
           log('info', `[E2E] Found existing test group: ${chat.id._serialized} (name: "${chat.name}")`);
           this.testChat = chat;
+          await this.clearTestGroupMessages();
           return;
         }
       }
@@ -186,6 +187,7 @@ export class E2EHarness {
             if (chat && chat.isGroup) {
               this.testChat = chat;
               log('info', `[E2E] Test group ready: ${chat.id._serialized}`);
+              await this.clearTestGroupMessages();
               return;
             }
           } catch (e) {
@@ -203,6 +205,7 @@ export class E2EHarness {
         if (chat.isGroup && chat.name === TEST_GROUP_NAME) {
           this.testChat = chat;
           log('info', `[E2E] Test group ready: ${chat.id._serialized}`);
+          await this.clearTestGroupMessages();
           return;
         }
       }
@@ -215,6 +218,16 @@ export class E2EHarness {
     }
 
     throw new Error(`Test group "${TEST_GROUP_NAME}" not found after creation.`);
+  }
+
+  /**
+   * Clear all messages from the test group for test isolation
+   */
+  private async clearTestGroupMessages(): Promise<void> {
+    if (!this.testChat) return;
+    log('info', '[E2E] Clearing test group messages...');
+    await this.testChat.clearMessages();
+    log('info', '[E2E] Messages cleared');
   }
 
   /**
