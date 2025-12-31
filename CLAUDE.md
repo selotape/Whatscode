@@ -154,8 +154,36 @@ This script automatically:
 
 **Important**: Only run WhatsClaude in ONE worktree at a time - they share the WhatsApp session.
 
+## Troubleshooting
+
+### Server stuck at "Loading: 99% - WhatsApp"
+
+This usually means zombie WhatsClaude processes are holding the WhatsApp session. The "Loading" percentage is WhatsApp Web syncing messages in the background - it can't be disabled or skipped.
+
+**Fix: Kill orphaned processes**
+
+```powershell
+# Find WhatsClaude processes (look for tsx src/index.ts)
+Get-Process node | ForEach-Object {
+  $cmd = (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)").CommandLine
+  if ($cmd -match 'tsx.*src/index') {
+    Write-Output "PID: $($_.Id) Started: $($_.StartTime)"
+  }
+}
+
+# Kill specific PIDs
+Stop-Process -Id <PID1>,<PID2> -Force
+```
+
+**Prevention**: Always stop the server cleanly with Ctrl+C. If the terminal crashes, check for orphaned processes before restarting.
+
+### E2E tests blocked by running instance
+
+The E2E harness detects Chrome lock files, but zombie node processes may not leave locks. If tests fail with "session already in use", kill orphaned processes as shown above.
+
 ## Important Notes
 
 - WhatsApp session persists in `.wwebjs_auth/` - don't delete unless re-authenticating
 - Sessions file at `~/claude-projects/.whatsclaude-sessions.json`
 - Re-scan QR code needed every ~2-3 weeks when WhatsApp expires session
+- WhatsApp sync (Loading %) cannot be disabled - it's how WhatsApp Web works
