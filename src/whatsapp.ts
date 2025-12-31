@@ -91,6 +91,12 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
         return;
       }
 
+      // Filter out empty messages (media without captions, system events, etc.)
+      if (!message.body.trim()) {
+        log('debug', 'Ignoring empty message');
+        return;
+      }
+
       const chat = await message.getChat();
 
       // Only handle groups with Claude: prefix
