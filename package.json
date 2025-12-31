@@ -12,7 +12,8 @@
     "test:watch": "vitest --exclude tests/e2e/**",
     "test:e2e": "vitest run tests/e2e",
     "test:e2e:watch": "vitest tests/e2e",
-    "update:all": "npx npm-check-updates -u && npm install && npm test && npm run test:e2e"
+    "update:all": "npx npm-check-updates -u && npm install && npm test && npm run test:e2e",
+    "reset-state": "npx tsx scripts/reset-state.ts"
   },
   "keywords": [
     "whatsapp",
