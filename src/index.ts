@@ -1,19 +1,38 @@
+/**
+ * WhatsClaude - WhatsApp to Claude Code Bridge
+ *
+ * Entry point that wires together:
+ * - WhatsApp connection
+ * - Claude Agent SDK
+ * - Session management
+ * - History logging
+ */
+
 import { createWhatsAppClient } from './whatsapp.js';
+import { handleClaudeQuery } from './claude.js';
+import { loadSessions } from './sessions.js';
+import { ensureProjectsRoot, getProjectPath, ensureProjectExists } from './projects.js';
+import { config, log } from './config.js';
 
 async function main() {
   console.log('🤖 WhatsClaude starting...\n');
   console.log('='.repeat(50));
-  console.log('  MILESTONE 1: WhatsApp Echo Test');
-  console.log('  This version just echoes messages back.');
+  console.log('  WhatsApp ↔ Claude Code Bridge');
+  console.log(`  Projects root: ${config.projectsRoot}`);
+  console.log(`  Group prefix: "${config.groupPrefix}"`);
   console.log('='.repeat(50));
   console.log();
 
-  // Create WhatsApp client with echo handler
+  // Initialize
+  ensureProjectsRoot();
+  loadSessions();
+
+  // Create WhatsApp client with Claude handler
   const client = createWhatsAppClient({
     onMessage: async (message, chat) => {
       // Skip media for now
       if (message.hasMedia) {
-        await chat.sendMessage("📎 I can't process media yet. Please send text.");
+        await chat.sendMessage("📎 I can't process media yet. Please describe what you need in text.");
         return;
       }
 
@@ -22,10 +41,47 @@ async function main() {
         return;
       }
 
-      // Echo the message back
-      const response = `Echo: ${message.body}`;
-      await chat.sendMessage(response);
-      console.log(`[${chat.name}] Sent: "${response.slice(0, 50)}${response.length > 50 ? '...' : ''}"`);
+      const groupId = chat.id._serialized;
+      const groupName = chat.name;
+
+      // Get sender info
+      const contact = await message.getContact();
+      const senderName = contact.pushname || contact.number || 'Unknown';
+      const senderId = contact.id._serialized;
+
+      // Ensure project directory exists
+      const projectPath = getProjectPath(groupName);
+      ensureProjectExists(projectPath, groupName);
+
+      log('info', `[${groupName}] ${senderName}: "${message.body.slice(0, 50)}${message.body.length > 50 ? '...' : ''}"`);
+
+      // Show typing indicator
+      await chat.sendStateTyping();
+
+      try {
+        // Query Claude
+        const response = await handleClaudeQuery({
+          groupId,
+          groupName,
+          projectPath,
+          message: message.body,
+          senderName,
+          senderId,
+          messageId: message.id._serialized,
+        });
+
+        // Clear typing and send response
+        await chat.clearState();
+        await chat.sendMessage(response);
+
+        log('info', `[${groupName}] Sent response (${response.length} chars)`);
+
+      } catch (error) {
+        await chat.clearState();
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        log('error', `[${groupName}] Error:`, errorMsg);
+        await chat.sendMessage(`❌ Error: ${errorMsg}`);
+      }
     },
   });
 
@@ -40,7 +96,7 @@ async function main() {
   process.on('SIGTERM', shutdown);
 
   // Start the client
-  console.log('Initializing WhatsApp client...\n');
+  log('info', 'Initializing WhatsApp client...');
   await client.initialize();
 }
 
