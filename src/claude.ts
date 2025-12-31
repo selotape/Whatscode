@@ -7,6 +7,7 @@ import { getSession, setSession, updateLastActivity } from './sessions.js';
 import { appendToHistory } from './history.js';
 import { log } from './config.js';
 import type { StoredMessage, SessionInfo } from './types.js';
+import { truncate, getErrorMessage } from './utils.js';
 
 /**
  * Default tools available to Claude
@@ -45,7 +46,7 @@ export async function handleClaudeQuery(params: ClaudeQueryParams): Promise<stri
 
   const existingSession = getSession(groupId);
 
-  log('debug', `Query for ${groupName}:`, message.slice(0, 50));
+  log('debug', `Query for ${groupName}:`, truncate(message));
   if (existingSession) {
     log('debug', `Resuming session: ${existingSession.sessionId}`);
   }
@@ -101,9 +102,9 @@ export async function handleClaudeQuery(params: ClaudeQueryParams): Promise<stri
     log('info', `[${groupName}] Claude responded (${result.length} chars)`);
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    log('error', `Claude query failed:`, errorMessage);
-    result = `❌ Error: ${errorMessage}`;
+    const errorMsg = getErrorMessage(error);
+    log('error', `Claude query failed:`, errorMsg);
+    result = `❌ Error: ${errorMsg}`;
   }
 
   // Update session store

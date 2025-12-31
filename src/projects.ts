@@ -2,9 +2,10 @@
  * Project directory management for WhatsClaude
  */
 
-import { mkdirSync, existsSync, writeFileSync } from 'fs';
+import { existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { config, log } from './config.js';
+import { ensureDir } from './utils.js';
 
 /**
  * Convert a WhatsApp group name to a valid directory name
@@ -37,7 +38,7 @@ export function getProjectPath(groupName: string): string {
 export function ensureProjectsRoot(): void {
   if (!existsSync(config.projectsRoot)) {
     log('info', `Creating projects root: ${config.projectsRoot}`);
-    mkdirSync(config.projectsRoot, { recursive: true });
+    ensureDir(config.projectsRoot);
   }
 }
 
@@ -80,13 +81,13 @@ export function ensureProjectExists(projectPath: string, groupName: string): voi
     log('info', `Creating project directory: ${projectPath}`);
 
     // Create project directory
-    mkdirSync(projectPath, { recursive: true });
+    ensureDir(projectPath);
 
     // Create CLAUDE.md
     createClaudeMd(projectPath, projectName);
 
     // Create .whatsclaude directory for history
-    mkdirSync(join(projectPath, '.whatsclaude'), { recursive: true });
+    ensureDir(join(projectPath, '.whatsclaude'));
 
     log('info', `Project "${projectName}" initialized`);
   }

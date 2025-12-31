@@ -11,6 +11,7 @@ import { config, log, formatBotResponse, formatServerMessage } from './config.js
 import { getProjectPath, ensureProjectExists, sanitizeProjectName } from './projects.js';
 import { handleClaudeQuery } from './claude.js';
 import { getRegisteredGroup, registerGroup } from './sessions.js';
+import { truncate, getErrorMessage } from './utils.js';
 
 // One queue per group (groupId → queue)
 const queues: Map<string, PQueue> = new Map();
@@ -111,7 +112,7 @@ export async function routeMessage(
 
   // Add to queue for processing
   queue.add(async () => {
-    log('info', `[${groupName}] ${senderName}: "${message.body.slice(0, 50)}${message.body.length > 50 ? '...' : ''}"`);
+    log('info', `[${groupName}] ${senderName}: "${truncate(message.body)}"`);
 
     // Show typing indicator
     await chat.sendStateTyping();
@@ -134,7 +135,7 @@ export async function routeMessage(
 
     } catch (error) {
       await chat.clearState();
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg = getErrorMessage(error);
       log('error', `[${groupName}] Error:`, errorMsg);
       await sendResponse(formatServerMessage(`❌ Error: ${errorMsg}`));
     }

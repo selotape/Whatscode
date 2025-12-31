@@ -5,10 +5,11 @@
  * debugging, and potential future features like search.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { log } from './config.js';
 import type { StoredMessage } from './types.js';
+import { ensureDir } from './utils.js';
 
 /**
  * Get the history file path for a project
@@ -24,10 +25,7 @@ export function appendToHistory(projectPath: string, message: StoredMessage): vo
   const historyPath = getHistoryPath(projectPath);
 
   // Ensure directory exists
-  const dir = dirname(historyPath);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
+  ensureDir(dirname(historyPath));
 
   try {
     const line = JSON.stringify(message) + '\n';
