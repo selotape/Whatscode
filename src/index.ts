@@ -14,8 +14,28 @@ import { routeMessage } from './router.js';
 import { loadState } from './sessions.js';
 import { ensureProjectsRoot } from './projects.js';
 import { config, log } from './config.js';
+import { acquireLock, forceCleanup } from './lockfile.js';
 
 async function main() {
+  // Check for --force flag to kill existing instances
+  const forceMode = process.argv.includes('--force');
+
+  if (forceMode) {
+    console.log('🔄 Force mode: cleaning up any existing instances...\n');
+    const result = forceCleanup();
+    if (result.killedPid) {
+      console.log(`   Killed process ${result.killedPid}\n`);
+    }
+  }
+
+  // Acquire lock to prevent multiple instances
+  const lockResult = acquireLock();
+  if (!lockResult.success) {
+    console.error('❌ ' + lockResult.error);
+    console.error('\n   Tip: Use --force to automatically kill existing instances');
+    process.exit(1);
+  }
+
   console.log('🤖 WhatsClaude starting...\n');
   console.log('='.repeat(50));
   console.log('  WhatsApp ↔ Claude Code Bridge');
@@ -38,10 +58,14 @@ async function main() {
     },
   });
 
-  // Graceful shutdown
+  // Graceful shutdown (lockfile cleanup is handled automatically)
   const shutdown = async () => {
     console.log('\n\n🛑 Shutting down...');
-    await client.destroy();
+    try {
+      await client.destroy();
+    } catch (error) {
+      log('warn', 'Error destroying client:', error);
+    }
     process.exit(0);
   };
 

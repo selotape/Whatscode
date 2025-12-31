@@ -12,6 +12,9 @@ dist/
 .wwebjs_auth/
 .wwebjs_cache/
 
+# Process lockfile
+.whatsclaude.pid
+
 # IDE
 .vscode/
 .idea/
