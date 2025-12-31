@@ -120,6 +120,22 @@ The E2E harness checks for Chrome's profile lock files before starting. If anoth
 - Only fall back to manual server testing (`npm run dev` + tail logs) when E2E tests aren't applicable.
 - **Commit your work once tests/verifications pass.** Don't wait for the user to ask.
 
+## Git Worktrees
+
+**Propose using a worktree** for any change touching 2+ files or requiring experimentation. Only skip for trivial single-file fixes.
+
+```bash
+# Create worktree for feature
+git worktree add ../Whatscode-<feature> -b feature/<feature>
+cd ../Whatscode-<feature>
+
+# When done, merge and clean up
+cd C:/Users/Ron/work/GitHub/Whatscode
+git merge feature/<feature>
+git worktree remove ../Whatscode-<feature>
+git branch -d feature/<feature>
+```
+
 ## Important Notes
 
 - WhatsApp session persists in `.wwebjs_auth/` - don't delete unless re-authenticating
