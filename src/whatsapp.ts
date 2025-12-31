@@ -5,6 +5,7 @@ type Message = pkg.Message;
 type Chat = pkg.Chat;
 import qrcode from 'qrcode-terminal';
 import { BOT_PREFIX, SERVER_PREFIX, log } from './config.js';
+import { truncate } from './utils.js';
 
 const GROUP_PREFIX = 'Claude:';
 
@@ -105,7 +106,7 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
         return;
       }
 
-      console.log(`[${chat.name}] Received: "${message.body.slice(0, 50)}${message.body.length > 50 ? '...' : ''}"`);
+      console.log(`[${chat.name}] Received: "${truncate(message.body)}"`);
 
       // Call custom handler if provided
       if (handlers?.onMessage) {
