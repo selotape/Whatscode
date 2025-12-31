@@ -120,34 +120,33 @@ The E2E harness checks for Chrome's profile lock files before starting. If anoth
 - Only fall back to manual server testing (`npm run dev` + tail logs) when E2E tests aren't applicable.
 - **Commit your work once tests/verifications pass.** Don't wait for the user to ask.
 
-## Git Worktrees (CRITICAL)
+## Concurrent Development Safety
 
-**ALWAYS create a worktree BEFORE making any code changes.** Multiple Claude sessions may be working on this repo simultaneously - editing files directly in master risks conflicts and data loss.
+Multiple Claude sessions may work on this repo simultaneously. Before making code changes:
 
-### When to use worktrees
-- **Default: YES** - Create a worktree for any code change
-- **Exception:** Only skip for config-only changes (CLAUDE.md, .env) or single-line typo fixes
+1. **Check for conflicts first:**
+   ```bash
+   git status
+   ```
+   If other files show as modified, alert the user before proceeding - another session may be working.
 
-### Workflow
+2. **Use targeted git commands:**
+   - `git add <specific-file>` - NOT `git add -A` or `git add .`
+   - This avoids accidentally staging another session's work
+
+3. **Commit promptly** after changes pass tests - don't leave work uncommitted.
+
+### When to use git worktrees
+Reserve worktrees for:
+- Long-running features (multi-day work)
+- Risky experimentation you might abandon
+- User explicitly requests isolation
+
 ```bash
-# 1. BEFORE any code edits, create worktree
-git worktree add ../Whatscode-<feature> -b fix/<feature>
+git worktree add ../Whatscode-<feature> -b feature/<name>
 cd ../Whatscode-<feature>
-npm install  # Required! Worktrees don't share node_modules
-
-# 2. Make changes, test, commit in the worktree
-
-# 3. When done, merge and clean up
-cd C:/Users/Ron/work/GitHub/Whatscode
-git merge fix/<feature>
-git worktree remove ../Whatscode-<feature>
-git branch -d fix/<feature>
+npm install  # Required - worktrees don't share node_modules
 ```
-
-### Why this matters
-- Other Claude sessions may have uncommitted changes in master
-- Direct edits can silently conflict with parallel work
-- Worktrees provide isolation - each session works independently
 
 ## Important Notes
 
