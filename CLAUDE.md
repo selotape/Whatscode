@@ -120,22 +120,34 @@ The E2E harness checks for Chrome's profile lock files before starting. If anoth
 - Only fall back to manual server testing (`npm run dev` + tail logs) when E2E tests aren't applicable.
 - **Commit your work once tests/verifications pass.** Don't wait for the user to ask.
 
-## Git Worktrees
+## Git Worktrees (CRITICAL)
 
-**Propose using a worktree** for any change touching 2+ files or requiring experimentation. Only skip for trivial single-file fixes.
+**ALWAYS create a worktree BEFORE making any code changes.** Multiple Claude sessions may be working on this repo simultaneously - editing files directly in master risks conflicts and data loss.
 
+### When to use worktrees
+- **Default: YES** - Create a worktree for any code change
+- **Exception:** Only skip for config-only changes (CLAUDE.md, .env) or single-line typo fixes
+
+### Workflow
 ```bash
-# Create worktree for feature
-git worktree add ../Whatscode-<feature> -b feature/<feature>
+# 1. BEFORE any code edits, create worktree
+git worktree add ../Whatscode-<feature> -b fix/<feature>
 cd ../Whatscode-<feature>
 npm install  # Required! Worktrees don't share node_modules
 
-# When done, merge and clean up
+# 2. Make changes, test, commit in the worktree
+
+# 3. When done, merge and clean up
 cd C:/Users/Ron/work/GitHub/Whatscode
-git merge feature/<feature>
+git merge fix/<feature>
 git worktree remove ../Whatscode-<feature>
-git branch -d feature/<feature>
+git branch -d fix/<feature>
 ```
+
+### Why this matters
+- Other Claude sessions may have uncommitted changes in master
+- Direct edits can silently conflict with parallel work
+- Worktrees provide isolation - each session works independently
 
 ## Important Notes
 
