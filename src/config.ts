@@ -34,9 +34,22 @@ function parseLogLevel(level: string | undefined): Config['logLevel'] {
 export const config: Config = {
   projectsRoot: expandHome(process.env.PROJECTS_ROOT || '~/claude-projects'),
   groupPrefix: 'Claude:',
-  maxQueueSize: 100,
+  maxQueueSize: 1,
   logLevel: parseLogLevel(process.env.LOG_LEVEL),
 };
+
+/**
+ * Prefix for all bot responses - used to identify and filter Claude's own messages
+ */
+export const BOT_PREFIX = '🤖🤖🤖: ';
+
+/**
+ * Format a message as a bot response (adds the bot prefix)
+ * All Claude messages should go through this to ensure proper identification
+ */
+export function formatBotResponse(message: string): string {
+  return `${BOT_PREFIX}${message}`;
+}
 
 /**
  * Log a message if the level is high enough

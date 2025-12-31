@@ -4,7 +4,7 @@ A TypeScript service bridging WhatsApp ↔ Claude Code via the Claude Agent SDK.
 
 ## Status
 
-**Alpha** - Core functionality complete, ready for testing.
+**Alpha** - Core functionality complete, ready for testing. See `TODO.md` for post-alpha roadmap.
 
 ## Architecture
 
@@ -37,6 +37,7 @@ WhatsApp message → router.ts (queue) → claude.ts (SDK) → response → What
 3. **JSONL history** - Append-only logs for auditing (not used for context - SDK handles that)
 4. **Sequential queue per group** - p-queue with concurrency:1 prevents race conditions
 5. **Permissive permissions** - acceptEdits mode, no interactive prompts for alpha
+6. **Identity caveat** - Claude authenticates using the developer's personal WhatsApp account; all messages sent by Claude appear to come from the developer's phone number
 
 ## Key Files Per Project
 

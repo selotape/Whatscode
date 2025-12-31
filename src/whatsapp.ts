@@ -3,6 +3,7 @@ const { Client, LocalAuth } = pkg;
 type Message = pkg.Message;
 type Chat = pkg.Chat;
 import qrcode from 'qrcode-terminal';
+import { BOT_PREFIX, log } from './config.js';
 
 const GROUP_PREFIX = 'Claude:';
 
@@ -81,6 +82,12 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
   // Message handling
   client.on('message', async (message) => {
     try {
+      // Filter out Claude's own messages to prevent infinite loops
+      if (message.body.startsWith(BOT_PREFIX)) {
+        log('debug', 'Ignoring bot message');
+        return;
+      }
+
       const chat = await message.getChat();
 
       // Only handle groups with Claude: prefix
