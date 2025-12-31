@@ -158,12 +158,16 @@ This script automatically:
 
 ### Server stuck at "Loading: 99% - WhatsApp"
 
-This usually means zombie WhatsClaude processes are holding the WhatsApp session. The "Loading" percentage is WhatsApp Web syncing messages in the background - it can't be disabled or skipped.
+This usually means a previous WhatsClaude instance is still running (or crashed without cleanup). The server now has built-in protection against this.
 
-**Fix: Kill orphaned processes**
+**Automatic fix**: Use the `--force` flag to auto-kill existing instances:
+```bash
+npm run dev -- --force
+```
 
+**Manual fix**: If the above doesn't work:
 ```powershell
-# Find WhatsClaude processes (look for tsx src/index.ts)
+# Find WhatsClaude processes
 Get-Process node | ForEach-Object {
   $cmd = (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)").CommandLine
   if ($cmd -match 'tsx.*src/index') {
@@ -175,7 +179,10 @@ Get-Process node | ForEach-Object {
 Stop-Process -Id <PID1>,<PID2> -Force
 ```
 
-**Prevention**: Always stop the server cleanly with Ctrl+C. If the terminal crashes, check for orphaned processes before restarting.
+**Clean slate**: To reset all state including lockfile:
+```bash
+npm run reset-state
+```
 
 ### E2E tests blocked by running instance
 

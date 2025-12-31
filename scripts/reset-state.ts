@@ -15,6 +15,7 @@ import { createInterface } from 'readline';
 import { config } from '../src/config.js';
 
 const SESSIONS_FILE = '.whatsclaude-sessions.json';
+const LOCKFILE = '.whatsclaude.pid';
 
 async function main() {
   const force = process.argv.includes('--force');
@@ -34,9 +35,11 @@ async function main() {
 
   const sessionsPath = join(projectsRoot, SESSIONS_FILE);
   const hasSessionsFile = existsSync(sessionsPath);
+  const lockfilePath = join(process.cwd(), LOCKFILE);
+  const hasLockfile = existsSync(lockfilePath);
 
   // 3. Nothing to delete?
-  if (projectDirs.length === 0 && !hasSessionsFile) {
+  if (projectDirs.length === 0 && !hasSessionsFile && !hasLockfile) {
     console.log('Nothing to reset - no projects or sessions found.');
     return;
   }
@@ -48,6 +51,9 @@ async function main() {
   }
   if (hasSessionsFile) {
     console.log(`  [file] ${sessionsPath}`);
+  }
+  if (hasLockfile) {
+    console.log(`  [file] ${lockfilePath}`);
   }
   console.log();
 
@@ -66,6 +72,9 @@ async function main() {
   }
   if (hasSessionsFile) {
     rmSync(sessionsPath);
+  }
+  if (hasLockfile) {
+    rmSync(lockfilePath);
   }
 
   console.log('State reset complete.');
