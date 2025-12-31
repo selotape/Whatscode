@@ -20,7 +20,7 @@ import { createWhatsAppClient } from '../whatsapp.js';
 import { routeMessage } from '../router.js';
 import { loadSessions, deleteSession } from '../sessions.js';
 import { ensureProjectsRoot, getProjectPath } from '../projects.js';
-import { config, log, formatBotResponse, BOT_PREFIX, SERVER_PREFIX } from '../config.js';
+import { config, log, BOT_PREFIX, SERVER_PREFIX } from '../config.js';
 
 const TEST_GROUP_NAME = 'Claude: AutomaticE2ETest';
 
@@ -252,9 +252,8 @@ export class E2EHarness {
       mockMessage as any,
       this.testChat,
       async (responseText: string) => {
-        // Send response to WhatsApp
-        const formattedResponse = formatBotResponse(responseText);
-        await this.testChat!.sendMessage(formattedResponse);
+        // Send response to WhatsApp (already formatted by router)
+        await this.testChat!.sendMessage(responseText);
 
         // Resolve the response promise
         if (this.responseResolver) {
