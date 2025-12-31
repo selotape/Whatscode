@@ -15,31 +15,51 @@ const SESSIONS_FILE = join(config.projectsRoot, '.whatsclaude-sessions.json');
 // In-memory session store
 let sessions: Record<string, SessionInfo> = {};
 
+// Group ownership registry: projectName → groupId (first group to claim the name wins)
+let groupRegistry: Record<string, string> = {};
+
 /**
- * Load sessions from disk
+ * Load sessions and group registry from disk
  */
-export function loadSessions(): void {
+export function loadState(): void {
   try {
     if (existsSync(SESSIONS_FILE)) {
       const data = readFileSync(SESSIONS_FILE, 'utf-8');
-      sessions = JSON.parse(data);
-      const count = Object.keys(sessions).length;
-      log('info', `Loaded ${count} session(s) from disk`);
+      const parsed = JSON.parse(data);
+
+      // Handle both old format (just sessions) and new format (sessions + groupRegistry)
+      if (parsed.sessions) {
+        sessions = parsed.sessions;
+        groupRegistry = parsed.groupRegistry || {};
+      } else {
+        // Old format: the whole file is just sessions
+        sessions = parsed;
+        groupRegistry = {};
+      }
+
+      const sessionCount = Object.keys(sessions).length;
+      const groupCount = Object.keys(groupRegistry).length;
+      log('info', `Loaded ${sessionCount} session(s) and ${groupCount} registered group(s) from disk`);
     }
   } catch (error) {
-    log('warn', 'Failed to load sessions, starting fresh:', error);
+    log('warn', 'Failed to load state, starting fresh:', error);
     sessions = {};
+    groupRegistry = {};
   }
 }
 
 /**
- * Save sessions to disk
+ * Save sessions and group registry to disk
  */
-export function saveSessions(): void {
+export function saveState(): void {
   try {
-    writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+    const state = {
+      sessions,
+      groupRegistry,
+    };
+    writeFileSync(SESSIONS_FILE, JSON.stringify(state, null, 2));
   } catch (error) {
-    log('error', 'Failed to save sessions:', error);
+    log('error', 'Failed to save state:', error);
   }
 }
 
@@ -55,7 +75,7 @@ export function getSession(groupId: string): SessionInfo | undefined {
  */
 export function setSession(groupId: string, info: SessionInfo): void {
   sessions[groupId] = info;
-  saveSessions();
+  saveState();
 }
 
 /**
@@ -64,7 +84,7 @@ export function setSession(groupId: string, info: SessionInfo): void {
 export function updateLastActivity(groupId: string): void {
   if (sessions[groupId]) {
     sessions[groupId].lastActivity = new Date().toISOString();
-    saveSessions();
+    saveState();
   }
 }
 
@@ -73,7 +93,7 @@ export function updateLastActivity(groupId: string): void {
  */
 export function deleteSession(groupId: string): void {
   delete sessions[groupId];
-  saveSessions();
+  saveState();
 }
 
 /**
@@ -81,4 +101,19 @@ export function deleteSession(groupId: string): void {
  */
 export function getAllSessions(): Record<string, SessionInfo> {
   return { ...sessions };
+}
+
+/**
+ * Get the group ID that owns a project name
+ */
+export function getRegisteredGroup(projectName: string): string | undefined {
+  return groupRegistry[projectName];
+}
+
+/**
+ * Register a group as the owner of a project name
+ */
+export function registerGroup(projectName: string, groupId: string): void {
+  groupRegistry[projectName] = groupId;
+  saveState();
 }

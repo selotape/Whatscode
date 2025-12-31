@@ -11,7 +11,7 @@
 
 import { createWhatsAppClient } from './whatsapp.js';
 import { routeMessage } from './router.js';
-import { loadSessions } from './sessions.js';
+import { loadState } from './sessions.js';
 import { ensureProjectsRoot } from './projects.js';
 import { config, log } from './config.js';
 
@@ -27,7 +27,7 @@ async function main() {
 
   // Initialize
   ensureProjectsRoot();
-  loadSessions();
+  loadState();
 
   // Create WhatsApp client with router
   const client = createWhatsAppClient({

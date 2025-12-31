@@ -18,7 +18,7 @@ import { existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { createWhatsAppClient } from '../whatsapp.js';
 import { routeMessage } from '../router.js';
-import { loadSessions, deleteSession } from '../sessions.js';
+import { loadState, deleteSession } from '../sessions.js';
 import { ensureProjectsRoot, getProjectPath } from '../projects.js';
 import { config, log, formatBotResponse, BOT_PREFIX, SERVER_PREFIX } from '../config.js';
 
@@ -78,7 +78,7 @@ export class E2EHarness {
 
     // Initialize dependencies
     ensureProjectsRoot();
-    loadSessions();
+    loadState();
 
     // Create promise to wait for ready
     this.readyPromise = new Promise((resolve) => {
