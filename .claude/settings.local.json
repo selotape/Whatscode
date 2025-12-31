@@ -8,7 +8,9 @@
       "Bash(mkdir:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(timeout 10 npm run dev:*)"
     ]
   }
 }

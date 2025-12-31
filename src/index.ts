@@ -48,12 +48,28 @@ async function main() {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  // Start the client
+  // Start the client with timeout
   log('info', 'Initializing WhatsApp client...');
-  await client.initialize();
+  log('info', 'This may take a minute on first run (downloading browser)...');
+
+  const initTimeout = 300000; // 5 minutes (WhatsApp Web can be slow)
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`Initialization timed out after ${initTimeout / 1000}s`)), initTimeout);
+  });
+
+  try {
+    await Promise.race([client.initialize(), timeoutPromise]);
+  } catch (error) {
+    log('error', 'Failed to initialize WhatsApp client:', error);
+    throw error;
+  }
 }
 
 main().catch((error) => {
   console.error('Fatal error:', error);
+  console.error('\nTroubleshooting:');
+  console.error('1. Make sure you have Chrome/Chromium installed');
+  console.error('2. Try deleting .wwebjs_auth folder and restarting');
+  console.error('3. Check if another instance is running');
   process.exit(1);
 });

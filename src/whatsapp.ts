@@ -1,4 +1,7 @@
-import { Client, LocalAuth, Message, Chat } from 'whatsapp-web.js';
+import pkg from 'whatsapp-web.js';
+const { Client, LocalAuth } = pkg;
+type Message = pkg.Message;
+type Chat = pkg.Chat;
 import qrcode from 'qrcode-terminal';
 
 const GROUP_PREFIX = 'Claude:';
@@ -8,18 +11,46 @@ export interface WhatsAppHandlers {
 }
 
 export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
+  console.log('Creating WhatsApp client...');
+
+  // Use headless: false for debugging - set to true for production
+  const isDebug = process.env.DEBUG_WHATSAPP === 'true';
+
   const client = new Client({
     authStrategy: new LocalAuth({
       dataPath: '.wwebjs_auth',
     }),
     puppeteer: {
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: !isDebug, // Set DEBUG_WHATSAPP=true to see browser
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--disable-gpu',
+      ],
     },
+  });
+
+  // Loading states
+  client.on('loading_screen', (percent, message) => {
+    console.log(`Loading: ${percent}% - ${message}`);
+  });
+
+  // Change state event - useful for debugging
+  client.on('change_state', (state) => {
+    console.log('State changed:', state);
+  });
+
+  // Remote session saved
+  client.on('remote_session_saved', () => {
+    console.log('Remote session saved');
   });
 
   // QR Code for first-time auth
   client.on('qr', (qr) => {
+    console.log('QR event received!');
     console.log('\n📱 Scan this QR code with WhatsApp:\n');
     qrcode.generate(qr, { small: true });
     console.log('\nOpen WhatsApp → Settings → Linked Devices → Link a Device\n');

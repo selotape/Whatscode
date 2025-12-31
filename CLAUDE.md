@@ -72,6 +72,11 @@ npm start        # Run built version
 2. **Milestone 2**: Claude SDK standalone test (verify SDK works)
 3. **Milestone 3**: Full integration (end-to-end flow)
 
+## Coding Instructions
+
+- Always test your changes (including writing tests as appropriate and executing them) immediately after your changes and before continuing to the next phase of implementation.
+- When no unit-tests are applicable or available, run the server locally, tail the logs and fix errors.
+
 ## Important Notes
 
 - WhatsApp session persists in `.wwebjs_auth/` - don't delete unless re-authenticating
