@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { E2EHarness } from '../../src/testing/e2e-harness.js';
+import { BOT_PREFIX, SERVER_PREFIX } from '../../src/config.js';
 
 describe('E2E Integration', () => {
   let harness: E2EHarness;
@@ -63,5 +64,18 @@ How many items are in the list above? Just respond with the number.`;
 
     expect(response).toBeDefined();
     expect(response).toContain('3');
+  }, 120000);
+
+  it('should use different prefixes for Claude responses vs server messages', async () => {
+    // Test 1: Claude response should have BOT_PREFIX
+    await harness.sendMessage('Say hi');
+    const claudeResponse = await harness.waitForResponse(90000);
+    expect(claudeResponse.startsWith(BOT_PREFIX)).toBe(true);
+
+    // Test 2: Server message should have SERVER_PREFIX
+    await harness.sendMediaMessage();
+    const serverResponse = await harness.waitForResponse(10000);
+    expect(serverResponse.startsWith(SERVER_PREFIX)).toBe(true);
+    expect(serverResponse).toContain("can't process media");
   }, 120000);
 });

@@ -20,7 +20,7 @@ import { createWhatsAppClient } from '../whatsapp.js';
 import { routeMessage } from '../router.js';
 import { loadSessions, deleteSession } from '../sessions.js';
 import { ensureProjectsRoot, getProjectPath } from '../projects.js';
-import { config, log, formatBotResponse } from '../config.js';
+import { config, log, formatBotResponse, BOT_PREFIX, SERVER_PREFIX } from '../config.js';
 
 const TEST_GROUP_NAME = 'Claude: AutomaticE2ETest';
 
@@ -330,6 +330,45 @@ export class E2EHarness {
     this.testChat = null;
     this.isReady = false;
     log('info', '[E2E] Cleanup complete');
+  }
+
+  /**
+   * Send a simulated media message to trigger the "can't process media" server message.
+   * Used for testing that server messages have the correct prefix.
+   */
+  async sendMediaMessage(): Promise<void> {
+    if (!this.testChat) {
+      throw new Error('Test group not set. Call findOrCreateTestGroup() first.');
+    }
+
+    log('info', '[E2E] Sending simulated media message');
+
+    // Create a mock message with hasMedia: true
+    const mockMessage = {
+      body: '',
+      id: { _serialized: `test-media-${Date.now()}` },
+      hasMedia: true,
+      getContact: async () => ({
+        pushname: 'E2E Test',
+        number: 'test',
+        id: { _serialized: 'test@c.us' },
+      }),
+    };
+
+    // Route the message - it should trigger the "can't process media" response
+    await routeMessage(
+      mockMessage as any,
+      this.testChat,
+      async (responseText: string) => {
+        await this.testChat!.sendMessage(responseText);
+        if (this.responseResolver) {
+          log('info', `[E2E] Captured server response (${responseText.length} chars)`);
+          this.responseResolver(responseText);
+          this.responseResolver = null;
+          this.responseRejector = null;
+        }
+      }
+    );
   }
 
   /**
