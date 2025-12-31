@@ -1,17 +1,19 @@
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
+type ClientType = InstanceType<typeof Client>;
 type Message = pkg.Message;
 type Chat = pkg.Chat;
 import qrcode from 'qrcode-terminal';
-import { BOT_PREFIX, log } from './config.js';
+import { BOT_PREFIX, SERVER_PREFIX, log } from './config.js';
 
 const GROUP_PREFIX = 'Claude:';
 
 export interface WhatsAppHandlers {
-  onMessage: (message: Message, chat: Chat) => Promise<void>;
+  onMessage?: (message: Message, chat: Chat) => Promise<void>;
+  onReady?: () => void;
 }
 
-export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
+export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
   console.log('Creating WhatsApp client...');
 
   // Use headless: false for debugging - set to true for production
@@ -61,6 +63,7 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
   client.on('ready', () => {
     console.log('\n✅ WhatsApp connected!\n');
     console.log(`Listening for messages in "${GROUP_PREFIX}" groups...\n`);
+    handlers?.onReady?.();
   });
 
   // Authentication
@@ -83,15 +86,16 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): Client {
   client.on('message', async (message) => {
     try {
       // Filter out Claude's own messages to prevent infinite loops
-      if (message.body.startsWith(BOT_PREFIX)) {
-        log('debug', 'Ignoring bot message');
+      if (message.body.startsWith(BOT_PREFIX) || message.body.startsWith(SERVER_PREFIX)) {
+        log('debug', 'Ignoring bot/server message');
         return;
       }
 
       const chat = await message.getChat();
 
       // Only handle groups with Claude: prefix
-      if (!chat.isGroup || !chat.name.startsWith(GROUP_PREFIX)) {
+      // Guard against undefined chat.name (can happen during group creation/sync)
+      if (!chat.isGroup || !chat.name || !chat.name.startsWith(GROUP_PREFIX)) {
         return;
       }
 

@@ -7,7 +7,7 @@
 
 import PQueue from 'p-queue';
 import type { Message, Chat } from 'whatsapp-web.js';
-import { config, log, formatBotResponse } from './config.js';
+import { config, log, formatBotResponse, formatServerMessage } from './config.js';
 import { getProjectPath, ensureProjectExists } from './projects.js';
 import { handleClaudeQuery } from './claude.js';
 
@@ -54,7 +54,7 @@ export async function routeMessage(
 
   // Skip media for now
   if (message.hasMedia) {
-    await sendResponse(formatBotResponse("📎 I can't process media yet. Please describe what you need in text."));
+    await sendResponse(formatServerMessage("📎 I can't process media yet. Please describe what you need in text."));
     return;
   }
 
@@ -70,7 +70,7 @@ export async function routeMessage(
   // Check queue size limit
   if (queue.size >= config.maxQueueSize) {
     log('warn', `[${groupName}] Queue full (${config.maxQueueSize})`);
-    await sendResponse(formatBotResponse(`⚠️ Queue full (${config.maxQueueSize} messages). Please wait for current tasks to complete.`));
+    await sendResponse(formatServerMessage(`⚠️ Queue full (${config.maxQueueSize} messages). Please wait for current tasks to complete.`));
     return;
   }
 
@@ -116,7 +116,7 @@ export async function routeMessage(
       await chat.clearState();
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       log('error', `[${groupName}] Error:`, errorMsg);
-      await sendResponse(formatBotResponse(`❌ Error: ${errorMsg}`));
+      await sendResponse(formatServerMessage(`❌ Error: ${errorMsg}`));
     }
   });
 }

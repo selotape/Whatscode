@@ -44,11 +44,24 @@ export const config: Config = {
 export const BOT_PREFIX = '🤖🤖🤖: ';
 
 /**
+ * Prefix for server/system messages (errors, unsupported operations, etc.)
+ */
+export const SERVER_PREFIX = '[🔧 System]: ';
+
+/**
  * Format a message as a bot response (adds the bot prefix)
  * All Claude messages should go through this to ensure proper identification
  */
 export function formatBotResponse(message: string): string {
   return `${BOT_PREFIX}${message}`;
+}
+
+/**
+ * Format a message as a server/system message (adds the server prefix)
+ * Used for errors, unsupported operations, and other system notifications
+ */
+export function formatServerMessage(message: string): string {
+  return `${SERVER_PREFIX}${message}`;
 }
 
 /**

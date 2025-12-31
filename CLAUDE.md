@@ -62,10 +62,50 @@ Environment variables (`.env`):
 
 ```bash
 npm run dev      # Development with hot reload
-npm run test     # Run tests
+npm run test     # Run unit tests
 npm run build    # Build for production
 npm start        # Run built version
 ```
+
+## E2E Testing
+
+Real end-to-end tests using actual WhatsApp connection.
+
+### Prerequisites
+- WhatsApp must be authenticated (QR code already scanned)
+- **No other WhatsClaude instance running** (they share the same WhatsApp session)
+
+### Running E2E Tests
+```bash
+npm run test:e2e        # Run all E2E tests
+npm run test:e2e:watch  # Watch mode (re-run on changes)
+```
+
+### What E2E Tests Do
+1. Initialize WhatsApp client (uses existing auth from `.wwebjs_auth/`)
+2. Find or create "Claude: AutomaticE2ETest" group
+3. Send real messages, wait for Claude responses
+4. Assert on response content
+5. Clean up test project directory + session
+
+### Test Timeouts
+- WhatsApp init: 3 minutes
+- Each Claude response: 90 seconds
+- Full test suite: ~10 minutes
+
+### Debugging E2E Tests
+- Set `DEBUG_WHATSAPP=true` to see the browser
+- Check `~/claude-projects/AutomaticE2ETest/` for test project state
+- Check `~/claude-projects/.whatsclaude-sessions.json` for session state
+
+### Adding New E2E Tests
+Edit `tests/e2e/integration.test.ts`. Use the harness methods:
+- `harness.sendMessage(text)` - Send to test group
+- `harness.waitForResponse(timeout)` - Wait for Claude's reply
+- `harness.cleanup()` - Clean up (called automatically in afterAll)
+
+### Conflict Detection
+The E2E harness checks for Chrome's profile lock files before starting. If another instance is running (main server or stuck process), tests will fail fast with a clear error message telling you to stop the other instance.
 
 ## Testing Milestones
 
@@ -77,6 +117,7 @@ npm start        # Run built version
 
 - Always test your changes (including writing tests as appropriate and executing them) immediately after your changes and before continuing to the next phase of implementation.
 - When no unit-tests are applicable or available, run the server locally, tail the logs and fix errors.
+- **Commit your work once tests/verifications pass.** Don't wait for the user to ask.
 
 ## Important Notes
 

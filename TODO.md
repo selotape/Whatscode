@@ -4,20 +4,20 @@ Features and improvements to add after the alpha is working.
 
 ## High Priority
 
-- [ ] **Dedicated phone number** - Switch to a dedicated cellphone number for Claude (separate from developer's personal WhatsApp account)
-- [ ] **Distinguish message sources** - Make a clear distinction between Claude responses and server messages (e.g. errors, unsupported operations)
+- [x] **Distinguish message sources** - Make a clear distinction between Claude responses and server messages (e.g. errors, unsupported operations)
 - [ ] **Queue acknowledgment messages** - Send "📥 Queued (position 2)..." when messages are queued
 - [ ] **Response chunking** - Split long responses (>3000 chars) into multiple messages
 - [ ] **"Working on it..." updates** - Send progress for long-running tasks (>30 seconds)
 - [ ] **Better error messages** - Include troubleshooting hints in error responses
 
-## Medium Priority
+## Low Priority
 
 - [ ] **Context summarization** - Summarize old messages when history gets too long
 - [ ] **WhatsApp permission prompts** - Ask for approval via WhatsApp for risky operations
 - [ ] **Message batching** - Combine rapid messages within N seconds into one prompt
 - [ ] **Cancel/interrupt** - Support "stop" or "cancel" to abort current task
 - [ ] **Session idle timeout** - Archive sessions after N hours of inactivity
+- [ ] **Dedicated phone number** - Switch to a dedicated cellphone number for Claude (separate from developer's personal WhatsApp account)
 
 ## Features
 
