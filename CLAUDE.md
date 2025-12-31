@@ -116,7 +116,8 @@ The E2E harness checks for Chrome's profile lock files before starting. If anoth
 ## Coding Instructions
 
 - Always test your changes (including writing tests as appropriate and executing them) immediately after your changes and before continuing to the next phase of implementation.
-- When no unit-tests are applicable or available, run the server locally, tail the logs and fix errors.
+- **Prefer E2E tests** (`npm run test:e2e`) over manually running the server and tailing logs. The E2E harness tests the full WhatsApp → Claude → response flow automatically.
+- Only fall back to manual server testing (`npm run dev` + tail logs) when E2E tests aren't applicable.
 - **Commit your work once tests/verifications pass.** Don't wait for the user to ask.
 
 ## Important Notes
