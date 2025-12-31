@@ -334,13 +334,44 @@ export class E2EHarness {
   /**
    * Send a simulated media message to trigger the "can't process media" server message.
    * Used for testing that server messages have the correct prefix.
+   *
+   * Unlike regular messages that go through the queue, media messages are handled
+   * synchronously in the router. This means the response happens DURING the
+   * routeMessage call, not after. We must set up the response promise BEFORE
+   * calling routeMessage to avoid a race condition.
+   *
+   * @returns The server response text
    */
-  async sendMediaMessage(): Promise<void> {
+  async sendMediaMessage(): Promise<string> {
     if (!this.testChat) {
       throw new Error('Test group not set. Call findOrCreateTestGroup() first.');
     }
 
     log('info', '[E2E] Sending simulated media message');
+
+    // Set up response promise BEFORE calling routeMessage
+    // This is critical because media messages are handled synchronously (no queue),
+    // so sendResponse is called during routeMessage, not after
+    const responsePromise = new Promise<string>((resolve, reject) => {
+      this.responseResolver = resolve;
+      this.responseRejector = reject;
+
+      // Set timeout
+      const timeout = setTimeout(() => {
+        if (this.responseResolver) {
+          this.responseResolver = null;
+          this.responseRejector = null;
+          reject(new Error('Media message response timeout after 10000ms'));
+        }
+      }, 10000);
+
+      // Wrap resolver to clear timeout
+      const originalResolver = this.responseResolver;
+      this.responseResolver = (text: string) => {
+        clearTimeout(timeout);
+        originalResolver(text);
+      };
+    });
 
     // Create a mock message with hasMedia: true
     const mockMessage = {
@@ -355,6 +386,7 @@ export class E2EHarness {
     };
 
     // Route the message - it should trigger the "can't process media" response
+    // The response will be captured by responseResolver set up above
     await routeMessage(
       mockMessage as any,
       this.testChat,
@@ -368,6 +400,10 @@ export class E2EHarness {
         }
       }
     );
+
+    // Return the response - this should resolve immediately since the response
+    // was already captured during routeMessage
+    return responsePromise;
   }
 
   /**

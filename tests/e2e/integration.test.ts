@@ -73,8 +73,8 @@ How many items are in the list above? Just respond with the number.`;
     expect(claudeResponse.startsWith(BOT_PREFIX)).toBe(true);
 
     // Test 2: Server message should have SERVER_PREFIX
-    await harness.sendMediaMessage();
-    const serverResponse = await harness.waitForResponse(10000);
+    // Note: sendMediaMessage now returns the response directly (media responses are synchronous)
+    const serverResponse = await harness.sendMediaMessage();
     expect(serverResponse.startsWith(SERVER_PREFIX)).toBe(true);
     expect(serverResponse).toContain("can't process media");
   }, 120000);
