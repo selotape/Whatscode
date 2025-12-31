@@ -22,6 +22,7 @@ Features and improvements to add after the alpha is working.
 ## Features
 
 - [ ] **Auto GitHub repo creation** - Create GitHub repos for new projects
+- [ ] **GitHub App integration** - Install and try github-app for repo management
 - [ ] **Special commands** - `!new` (fresh session), `!status` (queue info), `!history`
 - [ ] **Media handling** - Process images via Claude's vision capabilities
 - [ ] **Voice messages** - Transcribe audio messages to text

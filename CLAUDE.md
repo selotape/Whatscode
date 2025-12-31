@@ -143,10 +143,16 @@ Reserve worktrees for:
 - User explicitly requests isolation
 
 ```bash
-git worktree add ../Whatscode-<feature> -b feature/<name>
-cd ../Whatscode-<feature>
-npm install  # Required - worktrees don't share node_modules
+npm run worktree:add -- feature/<name>
+cd ../Whatscode-feature-<name>
 ```
+
+This script automatically:
+- Creates the worktree with the branch
+- Copies `node_modules` (avoids reinstall)
+- Symlinks `.wwebjs_auth` (avoids re-authentication)
+
+**Important**: Only run WhatsClaude in ONE worktree at a time - they share the WhatsApp session.
 
 ## Important Notes
 
