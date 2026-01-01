@@ -194,3 +194,4 @@ The E2E harness detects Chrome lock files, but zombie node processes may not lea
 - Sessions file at `~/claude-projects/.whatsclaude-sessions.json`
 - Re-scan QR code needed every ~2-3 weeks when WhatsApp expires session
 - WhatsApp sync (Loading %) cannot be disabled - it's how WhatsApp Web works
+- **WhatsApp Web sync limitation**: Multiple WhatsApp Web sessions on the same account don't sync messages between each other. Claude's responses appear in the server's Puppeteer browser and on your phone, but NOT in a separate browser's WhatsApp Web. To see responses during debugging, use `DEBUG_WHATSAPP=true` to view the server's browser, or check your phone.
