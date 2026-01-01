@@ -83,10 +83,13 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
     client.initialize().catch(console.error);
   });
 
-  // Message handling
-  client.on('message', async (message) => {
+  // Message handling - use message_create to catch messages from same account on different devices
+  // The 'message' event only fires for incoming messages from others.
+  // 'message_create' fires for ALL messages including ones we send from another device (phone, web).
+  client.on('message_create', async (message) => {
     try {
       // Filter out Claude's own messages to prevent infinite loops
+      // These are messages the bot itself sent (have our prefix)
       if (message.body.startsWith(BOT_PREFIX) || message.body.startsWith(SERVER_PREFIX)) {
         log('debug', 'Ignoring bot/server message');
         return;
@@ -106,9 +109,8 @@ export function createWhatsAppClient(handlers?: WhatsAppHandlers): ClientType {
         return;
       }
 
-      console.log(`[${chat.name}] Received: "${truncate(message.body)}"`);
-
       // Call custom handler if provided
+      // (logging is handled in router.ts with more context)
       if (handlers?.onMessage) {
         await handlers.onMessage(message, chat);
       }

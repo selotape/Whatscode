@@ -94,10 +94,22 @@ export async function routeMessage(
     return;
   }
 
-  // Get sender info
-  const contact = await message.getContact();
-  const senderName = contact.pushname || contact.number || 'Unknown';
-  const senderId = contact.id._serialized;
+  // Get sender info - handle fromMe messages from other devices gracefully
+  let senderName = 'User';
+  let senderId = 'unknown';
+  try {
+    const contact = await message.getContact();
+    senderName = contact.pushname || contact.number || 'Unknown';
+    senderId = contact.id._serialized;
+  } catch (error) {
+    // For messages from same account on different device, getContact() may fail
+    // Use fallback values - the message is still valid
+    log('debug', 'Could not get contact info (likely fromMe message from another device)');
+    if (message.fromMe) {
+      senderName = 'You (from another device)';
+      senderId = 'self';
+    }
+  }
 
   // Ensure project directory exists
   const projectPath = getProjectPath(groupName);
@@ -131,7 +143,7 @@ export async function routeMessage(
       await chat.clearState();
       await sendResponse(formatBotResponse(response));
 
-      log('info', `[${groupName}] Sent response (${response.length} chars)`);
+      log('info', `[${groupName}] Claude: "${truncate(response)}"`);
 
     } catch (error) {
       await chat.clearState();

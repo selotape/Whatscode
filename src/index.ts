@@ -53,7 +53,11 @@ async function main() {
   const client = createWhatsAppClient({
     onMessage: async (message, chat) => {
       await routeMessage(message, chat, async (text) => {
-        await chat.sendMessage(text);
+        // Get fresh chat object to ensure we can send
+        // The original chat from message.getChat() may be stale for
+        // fromMe messages sent from another device (phone, web browser)
+        const freshChat = await client.getChatById(chat.id._serialized);
+        await freshChat.sendMessage(text);
       });
     },
   });
